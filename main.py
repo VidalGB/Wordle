@@ -15,10 +15,14 @@ import math
 import sys
 import csv
 import ast
+import logging
 
+# logging basic config
+logging.basicConfig(level = logging.DEBUG, filename = './data/app.log', filemode = 'ws', format = '%(name)s-%(levelname)s: %(message)s', encoding = 'utf-8')
 
 #Path search
 def path(relativePath):
+  logging.info(f'buscando la ruta de {relativePath}')
   try:
     bacePath = sys._MEIPASS
   except Exception:
@@ -28,6 +32,7 @@ def path(relativePath):
 
 #Read and write files functions
 def read(obj):
+  logging.info(f'leyendo el archivo "datos.csv", linea: {obj}')
   paht = path('data/data.csv')
   with open (paht, 'r', encoding="utf-8") as file:
     content = csv.reader(file, delimiter = ';')
@@ -51,6 +56,7 @@ def write(obj, writer):
       if element == []:
         del save[n]
       n += 1
+  logging.info(f'escribiendo el archivo "datos.csv", linea: {obj}, dato: {writer}')
   paht = path('data/data.csv')
   with open (paht, 'w', newline = '') as file:
     write = csv.writer(file, delimiter = ';')
@@ -429,6 +435,7 @@ class Game(object):
 def main():
 
 #   Starting pygame
+  logging.info('iniciando pygame')
   Pg.init()
 
 #   Select icon for the app
@@ -442,17 +449,19 @@ def main():
   clock = Pg.time.Clock()
   gameOver = False
   game = Game()
-
+  logging.info('entrando al bucle principal')
 #   Loop game
   while not gameOver:
     gameOver = game.events()
     game.logic()
     game.screen(windows)
     clock.tick(90)
+  logging.info('saliendo bucle principal')
   Pg.quit()
   sys.exit()
 
 
 #Check script main
 if __name__ == "__main__":
+  logging.warning('iniciando funcioan principal')
   main()
