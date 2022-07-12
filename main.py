@@ -100,7 +100,8 @@ class Game(object):
     self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', 60)
     self.proportion = ast.literal_eval(read('proportion'))
     self.dicLanguage = ast.literal_eval(read('language'))
-    self.dicPlaytext =  ast.literal_eval(read('playText'))
+    self.dicPlayText = ast.literal_eval(read('playText'))
+    self.dicEndText = ast.literal_eval(read('endText'))
     self.lenWord = int(read('length'))
 
     logging.info('estableciondo color de la app')
@@ -365,12 +366,12 @@ class Game(object):
 #     Draw text the counter
       self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', int(self.pixel(5, 'h')))
       textHits = self.font.render(str(self.hits), True, self.colorFont)
-      windows.blit(textHits, (widthRest + self.width/4.5, heightRest + self.height - self.pixel(6.5, 'h')))
+      windows.blit(textHits, (widthRest + self.pixel(22.22, 'w'), heightRest + self.pixel(93.5, 'h')))
 
 #     Load check image
       check = Pg.image.load('./data/image/check.png')
       check = Pg.transform.scale(check, (self.pixel(6, 'w'), self.pixel(6, 'h')))
-      windows.blit(check, (widthRest + self.width/6, heightRest + self.height - self.pixel(6.5, 'h')))
+      windows.blit(check, (widthRest + self.pixel(16.66, 'w'), heightRest + self.pixel(93.5, 'h')))
 
 #   End screen
     if self.endScreen:
@@ -384,18 +385,41 @@ class Game(object):
 
 #     Paint text the end game
       self.font = Pg.font.Font('data/font/CascadiaMonoPLItalic.ttf', int(boxHeight))
+      text = self.dicEndText[self.idiom]
       if self.win:
-        fontText = self.font.render('VICTORIA', True, self.colorFont)
-        windows.blit(fontText, (widthRest + self.width/4, heightRest + self.height/4))
+        fontText = self.font.render(text[1], True, self.colorFont)
+        windows.blit(fontText, (widthRest + self.pixel(25, 'w'), heightRest + self.pixel(25, 'h')))
       else:
-        fontText = self.font.render('DERROTA', True, self.colorFont)
-        windows.blit(fontText, (widthRest + self.width/4, heightRest + self.height/4))
+        fontText = self.font.render(text[0], True, self.colorFont)
+        windows.blit(fontText, (widthRest + self.pixel(25, 'w'), heightRest + self.pixel(25, 'h')))
+
+#     Create the icon check word and its counter
+#       Draw text the counter
+      self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', int(self.pixel(5, 'h')))
+      textHits = self.font.render(str(self.hits), True, self.colorFont)
+      windows.blit(textHits, (widthRest + self.pixel(50, 'w'), heightRest + self.pixel(40, 'h')))
+
+#       Load check image
+      check = Pg.image.load('./data/image/check.png')
+      check = Pg.transform.scale(check, (self.pixel(6, 'w'), self.pixel(6, 'h')))
+      windows.blit(check, (widthRest + self.pixel(43.47826087, 'w'), heightRest + self.pixel(40, 'h')))
+
+#     Create the icon star record and its counter
+#       Draw text the counter
+      self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', int(self.pixel(5, 'h')))
+      textRecord = self.font.render(str(self.record), True, self.colorFont)
+      windows.blit(textRecord, (widthRest + self.pixel(50, 'w'), heightRest + self.pixel(46, 'h')))
+
+#       Load star image
+      star = Pg.image.load('./data/image/star.png')
+      star = Pg.transform.scale(star, (self.pixel(6, 'w'), self.pixel(6, 'h')))
+      windows.blit(star, (widthRest + self.pixel(43.47826087, 'w'), heightRest + self.pixel(46, 'h')))
 
 #     Paint text to continue play
-      text = self.dicPlaytext[self.idiom]
+      text = self.dicPlayText[self.idiom]
       self.font = Pg.font.Font('data/font/CascadiaMonoPLBold.ttf', int(self.pixel(3, 'h')))
       playText = self.font.render(text, True, self.colorFont)
-      windows.blit(playText, (widthRest + self.width/9, heightRest + self.height - self.pixel(6, 'h')))
+      windows.blit(playText, (widthRest + self.pixel(11.11, 'w'), heightRest + self.pixel(94, 'h')))
 
 #   Configuration screen
     if self.configScreen:

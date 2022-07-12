@@ -1,11 +1,11 @@
-color;black
+color;white
 height;500
 width;500
 length;5
 proportion;{4:[6.5, 1.5, 12, 12, 30], 5:[4, 1.5, 12, 12, 37], 6:[2.3, 1.5, 12, 12, 44]}
 idiom;es
 language;{'es':['a','b','c','d','e','f','g','h','i','j','k','l','m','n','ñ','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z'],'en':['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'], 'por':['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']}
-endText:{'es':['DERROTA','VICTORIA'],'en':['DEFEAT','VICTORY'],'por':['DERROTA','VITÓRIA']}
+endText;{'es':['DERROTA','VICTORIA'],'en':['DEFEAT','VICTORY'],'por':['DERROTA','VITÓRIA']}
 colors;{'lightBlue': (141,182,205), 'black': (0, 0, 0), 'white': (255, 255, 255), 'yellow': (255,215,0), 'gray': (205,201,201), 'red': (238,0,0), 'green': (50,205,50), 'blue': (24,116,205)}
-record;5
 playText;{'es':'Para continuar presiona [ENTER] o [ESPACIO]','en':'To continue press [ENTER] or [SPACE]','por':'Para continuar, pressione [ENTER] ou [ESPAÇO]'}
+record;7
