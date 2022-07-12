@@ -18,7 +18,7 @@ import ast
 import logging
 
 # logging basic config
-logging.basicConfig(level = logging.DEBUG, filename = './data/app.log', filemode = 'ws', format = '%(name)s-%(levelname)s: %(message)s', encoding = 'utf-8')
+logging.basicConfig(level = logging.DEBUG, filename = './data/app.log', filemode = 'w', format = '%(name)s-%(levelname)s: %(message)s', encoding = 'utf-8')
 
 #Path search
 def path(relativePath):
@@ -71,6 +71,7 @@ class Game(object):
   def __init__(self):
 
 # Set the Gobal variables
+    logging.info('estableciendo variables de inicio')
     self.userText = ''
     self.Attempts = 0
     self.hits = 0
@@ -98,7 +99,11 @@ class Game(object):
     self.game = False
     self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', 60)
     self.proportion = ast.literal_eval(read('proportion'))
+    self.dicLanguage = ast.literal_eval(read('language'))
+    self.dicPlaytext =  ast.literal_eval(read('playText'))
+    self.lenWord = int(read('length'))
 
+    logging.info('estableciondo color de la app')
 # Seletc the color app
     if read('color') == 'white':
       self.colorBackground = self.colors['white']
@@ -112,7 +117,7 @@ class Game(object):
 
 # Function for detect and work to events
   def events(self):
-    dic = ast.literal_eval(read('language'))
+    logging.info('detectando eventos')
     for event in Pg.event.get():
 
 #   Exit events
@@ -153,6 +158,10 @@ class Game(object):
       if event.type == Pg.KEYDOWN:
         if event.key == Pg.K_ESCAPE:
           return True
+        elif event.key == Pg.K_SPACE:
+          if self.endScreen == True:
+            self.endScreen = False
+            self.game = False
         elif event.key == Pg.K_RETURN:
           if self.endScreen == True:
             self.endScreen = False
@@ -162,7 +171,7 @@ class Game(object):
         elif event.key == Pg.K_BACKSPACE:
           self.userText = self.userText[:-1]
         else:
-          for letre in dic[self.idiom]:
+          for letre in self.dicLanguage[self.idiom]:
             if letre == event.unicode:
               if self.focusText == True and len(self.userText) +1 <= int(read('length')):
                 self.userText += event.unicode
@@ -171,6 +180,7 @@ class Game(object):
 
 # Game logic function
   def logic(self):
+    logging.info('calculando logica')
 
 #   New game
     if not self.game:
@@ -181,7 +191,7 @@ class Game(object):
       self.rowColor = {}
       self.rowLyrics = {}
       self.Attempts = 0
-      self.flack = True
+      self.flackCheckWord = True
 
 #   Control word
     self.corretWord = []
@@ -236,21 +246,21 @@ class Game(object):
     if self.Attempts == 5 or self.win == True:
       self.endScreen = True
       if not self.win:
-        if self.flack:
+        if self.flackCheckWord:
           if self.hits > 0:
-            self.hits -= 1
-          self.flack = False
+            self.hits = 0
+          self.flackCheckWord = False
 #   Win
     if self.win:
-      if self.flack:
+      if self.flackCheckWord:
         self.hits += 1
         if self.hits > self.record:
           self.record = self.hits
           write('record', self.record)
-        self.flack = False
+        self.flackCheckWord = False
 
 
-#   Press check or cross button
+#   Press button
 #     Check button
     if not self.pressCheck:
       self.colorCheck = self.colorPassive
@@ -281,7 +291,7 @@ class Game(object):
 
 # Game screen function
   def screen(self, windows):
-    len = int(read('length'))
+    logging.info('pintando pantalla')
 
 #   Window resize
     self.width, self.height, widthRest, heightRest = self.window(windows.get_width(), windows.get_height())
@@ -291,11 +301,11 @@ class Game(object):
     posCross = (widthRest + self.pixel(80, 'w'), heightRest + self.pixel(81.5, 'h'))
 
 #   Box measurements
-    boxWidth = self.pixel(self.proportion[len][2], 'w')
-    boxHeight = self.pixel(self.proportion[len][3], 'h')
-    spaceWidth = self.pixel(self.proportion[len][0], 'w')
-    spaceHeight = self.pixel(self.proportion[len][1], 'h')
-    rectWidth = self.pixel(self.proportion[len][4], 'w')
+    boxWidth = self.pixel(self.proportion[self.lenWord][2], 'w')
+    boxHeight = self.pixel(self.proportion[self.lenWord][3], 'h')
+    spaceWidth = self.pixel(self.proportion[self.lenWord][0], 'w')
+    spaceHeight = self.pixel(self.proportion[self.lenWord][1], 'h')
+    rectWidth = self.pixel(self.proportion[self.lenWord][4], 'w')
 
 #   Update font size and text input, buttons measurements
     self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', int(boxHeight))
@@ -306,11 +316,11 @@ class Game(object):
 
 #   Game screen
     if self.gameScreen:
-
-#   Paint window and lyrics, draw boxes and text input
+      logging.info('pantalla de juego')
+#   Paint the Window and letters, boxes and text input
       windows.fill(self.colorBackground)
       for row in range(5):
-        for column in range(len):
+        for column in range(self.lenWord):
           if row == self.Attempts:
             Pg.draw.rect(windows, self.colorActive, Pg.Rect(widthRest + spaceWidth*(column+1) + (spaceWidth + boxWidth)*column, heightRest + spaceHeight*(row+1) + (spaceHeight + boxHeight)*row, boxWidth, boxHeight))
           elif row > self.Attempts:
@@ -329,7 +339,7 @@ class Game(object):
       Pg.draw.rect(windows, self.colorCheck, self.checkButton)
       Pg.draw.rect(windows, self.colorCross, self.crossButton)
 
-#   Draw line icon
+#   Draw icon line
       List = ['green', 'red']
       m = 0
       for icon in lineIcon:
@@ -337,47 +347,53 @@ class Game(object):
           Pg.draw.line(windows, self.colors[List[m]], lineIcon[icon][n], lineIcon[icon][n+1], width = int(self.pixel(2, 'w')))
         m += 1
 
-#   Paint font
+#   Paint the text of the input text
       self.userText = self.userText.upper()
       fontText = self.font.render(self.userText, True, self.colorFont)
       windows.blit(fontText, (self.textInput.x + self.pixel(1, 'w'), self.textInput.y - self.pixel(1, 'h')))
 
-#   Create the icon config
+#   Create config icon
       self.posCircle = (widthRest + self.width - self.pixel(3.5, 'w'), heightRest + self.height - self.pixel(3.5, 'h'))
       Pg.draw.circle(windows, self.colorConfig, self.posCircle, (self.pixel(1.5, 'w') + self.pixel(1.5, 'h')))
 
-#     load the image gear
+#     load gear image
       gear = Pg.image.load('./data/image/gear.png')
       gear = Pg.transform.scale(gear, (self.pixel(4, 'w'), self.pixel(4, 'h')))
       windows.blit(gear, (self.posCircle[0] - self.pixel(2, 'w'), self.posCircle[1] - self.pixel(2, 'h')))
 
-#   Create the icon check word and counter
-#     Draw text the cointer
+#   Create the icon check word and its counter
+#     Draw text the counter
       self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', int(self.pixel(5, 'h')))
       textHits = self.font.render(str(self.hits), True, self.colorFont)
-      windows.blit(textHits, (widthRest + self.width/4, heightRest + self.height - self.pixel(6, 'h')))
+      windows.blit(textHits, (widthRest + self.width/4.5, heightRest + self.height - self.pixel(6.5, 'h')))
 
-#     Load the image check
+#     Load check image
       check = Pg.image.load('./data/image/check.png')
-      check = Pg.transform.scale(check, (self.pixel(5, 'w'), self.pixel(5, 'h')))
-      windows.blit(check, (widthRest + self.width/6, heightRest + self.height - self.pixel(5.5, 'h')))
+      check = Pg.transform.scale(check, (self.pixel(6, 'w'), self.pixel(6, 'h')))
+      windows.blit(check, (widthRest + self.width/6, heightRest + self.height - self.pixel(6.5, 'h')))
 
 #   End screen
     if self.endScreen:
-      self.font = Pg.font.Font('data/font/CascadiaMonoPLItalic.ttf', int(boxHeight))
+      logging.info('pantalla de fin')
+
+#     Create the transparent surface
       self.background = Pg.Surface((windows.get_width(), windows.get_height()))
       self.background.set_alpha(170)
       self.background.fill(self.colorBackground)
       windows.blit(self.background, (0,0))
+
+#     Paint text the end game
+      self.font = Pg.font.Font('data/font/CascadiaMonoPLItalic.ttf', int(boxHeight))
       if self.win:
-        fontText = self.font.render('victoria', True, self.colorFont)
+        fontText = self.font.render('VICTORIA', True, self.colorFont)
         windows.blit(fontText, (widthRest + self.width/4, heightRest + self.height/4))
       else:
         fontText = self.font.render('DERROTA', True, self.colorFont)
         windows.blit(fontText, (widthRest + self.width/4, heightRest + self.height/4))
-      dic =  ast.literal_eval(read('playText'))
-      text = dic[self.idiom]
-      self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', int(self.pixel(3, 'h')), bold = True)
+
+#     Paint text to continue play
+      text = self.dicPlaytext[self.idiom]
+      self.font = Pg.font.Font('data/font/CascadiaMonoPLBold.ttf', int(self.pixel(3, 'h')))
       playText = self.font.render(text, True, self.colorFont)
       windows.blit(playText, (widthRest + self.width/9, heightRest + self.height - self.pixel(6, 'h')))
 
@@ -390,7 +406,7 @@ class Game(object):
 
 
 # Screen functions
-#   Function window resize
+#   Window resize function
   def window(self, actualWidth, actualHeight):
     widthRest = 0
     heightRest = 0
@@ -406,7 +422,7 @@ class Game(object):
       widthRest = (actualWidth - actualHeight)/2
     return (width, height, widthRest, heightRest)
 
-#   Function calculate screen pixels by percentage
+#   Function for calculate screen pixels by percentage
   def pixel(self, por, obj):
     if obj == 'w':
       return por*self.width/100
@@ -414,7 +430,7 @@ class Game(object):
       return por*self.height/100
 
 
-# Function get random word
+# Function for get random word
   def randomWord(self):
     self.game = True
     paht = path(f"./data/words/{read('length')}words-{read('idiom')}.txt")
@@ -442,7 +458,7 @@ def main():
   logo = Pg.image.load(path('./data/image/logo.png'))
   Pg.display.set_icon(logo)
 
-#   Window measurements, select title and mouse config
+#    Window measurements, title selec and mouse config
   windows = Pg.display.set_mode((int(read('width')), int(read('height'))), Pg.RESIZABLE)
   Pg.display.set_caption("Wordle")
   Pg.mouse.set_visible(True)
@@ -450,13 +466,13 @@ def main():
   gameOver = False
   game = Game()
   logging.info('entrando al bucle principal')
-#   Loop game
+#   Game loop
   while not gameOver:
     gameOver = game.events()
     game.logic()
     game.screen(windows)
     clock.tick(90)
-  logging.info('saliendo bucle principal')
+  logging.warning('saliendo bucle principal')
   Pg.quit()
   sys.exit()
 
