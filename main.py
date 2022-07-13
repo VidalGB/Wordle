@@ -462,15 +462,24 @@ class Game(object):
   def randomWord(self):
     self.game = True
     paht = path(f"./data/words/{read('length')}words-{read('idiom')}.txt")
-    with open (paht, 'r', encoding="utf-8") as file:
+    with open (paht, 'r', encoding = "utf-8") as file:
       lines = file.readlines()
       line = ''.join(lines)
       word = line.split('\n')
-      n = random.randint(0, len(word)-1)
-      print(n)
-      self.ranWord = word[n]
+      max = len(word) - 1
+      while True:
+        n = random.randint(0, max)
+        self.ranWord = word[n]
+        logging.debug(f'Numero aleatorio {n}, palabra aleatoria {self.ranWord}')
+        wordList = ast.literal_eval(read('wordList'))
+        if self.ranWord not in wordList:
+          del wordList[0]
+          wordList.append(self.ranWord)
+          write('wordList', wordList)
+          break
       self.ranWord = self.ranWord.upper()
       self.ranWord = list(self.ranWord)
+      logging.info(f'Palabra a adivinar "{self.ranWord}"')
       print(self.ranWord)
       file.close()
 

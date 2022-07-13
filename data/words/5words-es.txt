@@ -3,7 +3,6 @@ polvo
 gorro
 corre
 cinco
-color
 lapiz
 nueve
 siete
