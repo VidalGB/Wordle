@@ -18,7 +18,7 @@ import ast
 import logging
 
 # logging basic config
-logging.basicConfig(level = logging.DEBUG, filename = './data/app.log', filemode = 'w', format = '%(name)s-%(levelname)s: %(message)s', encoding = 'utf-8')
+logging.basicConfig(level = logging.DEBUG, filename = './data/app.log', filemode = 'w', format = '%(name)s-%(levelname)s: %(message)s')
 
 #Path search
 def path(relativePath):
@@ -379,7 +379,7 @@ class Game(object):
 
 #     Create the transparent surface
       self.background = Pg.Surface((windows.get_width(), windows.get_height()))
-      self.background.set_alpha(170)
+      self.background.set_alpha(200)
       self.background.fill(self.colorBackground)
       windows.blit(self.background, (0,0))
 
@@ -416,10 +416,14 @@ class Game(object):
       windows.blit(star, (widthRest + self.pixel(43.47826087, 'w'), heightRest + self.pixel(46, 'h')))
 
 #     Paint text to continue play
+      if self.idiom == 'en':
+        posWidthText = self.pixel(19, 'w')
+      else:
+        posWidthText = self.pixel(11.11, 'w')
       text = self.dicPlayText[self.idiom]
       self.font = Pg.font.Font('data/font/CascadiaMonoPLBold.ttf', int(self.pixel(3, 'h')))
       playText = self.font.render(text, True, self.colorFont)
-      windows.blit(playText, (widthRest + self.pixel(11.11, 'w'), heightRest + self.pixel(94, 'h')))
+      windows.blit(playText, (widthRest + posWidthText, heightRest + self.pixel(94, 'h')))
 
 #   Configuration screen
     if self.configScreen:
