@@ -85,6 +85,7 @@ class Game():
     self.dicPlayText = ast.literal_eval(read('playText'))
     self.dicEndText = ast.literal_eval(read('endText'))
     self.dicNewRecord = ast.literal_eval(read('recordText'))
+    self.dicThemeText = ast.literal_eval(read('themeText'))
     self.colors = ast.literal_eval(read('colors'))
 
     self.colorActive = self.colors['lightBlue']
@@ -220,7 +221,7 @@ class Game():
 
 #   Configuration screen
     if self.configScreen:
-      self.paintConfigScreen(windows)
+      self.paintConfigScreen(windows, widthRest = widthRest, heightRest = heightRest)
 
 #   Update window
     Pg.display.flip()
@@ -549,11 +550,21 @@ class Game():
 
 #   Piant and draw the element on the configuration screen
   def paintConfigScreen(self, windows, **karg):
+    spaceWidth = self.pixel(3, 'w')
+    spaceHeight = self.pixel(2, 'h')
+
     windows.fill(self.colorBackground)
+
+    self.font = Pg.font.Font(path('data/font/CascadiaMonoPLBold.ttf'), int(self.pixel(5, 'h')))
     text = self.dicThemeText[self.idiom]
     textTheme = self.font.render(text, True, self.colorFont)
-    windows.blit(textTheme, (karg['widthRest'] + self.pixel(53, 'w'), karg['heightRest'] + self.pixel(46, 'h')))
-    
+    windows.blit(textTheme, (karg['widthRest'] + self.pixel(8, 'w'), karg['heightRest'] + self.pixel(12, 'h')))
+
+    for row in range(4):
+      for column in range(2):
+        initLine = (karg['widthRest'] + spaceWidth*(column+1) + (spaceWidth + (self.pixel(7, 'w')))*column, karg['heightRest'] + spaceHeight*(row+1) + (spaceHeight + (self.pixel(18, 'h')))*row)
+        endLine = (karg['widthRest'] + spaceWidth*(column+1) + (spaceWidth + (self.pixel(32, 'w')))*column, karg['heightRest'] + spaceHeight*(row+1) + (spaceHeight + (self.pixel(18, 'h')))*row)
+        Pg.draw.line(windows, self.colorFont, initLine, endLine, width = int(self.pixel(1, 'w')))
 
 #Sound Function
   def Sound(self, sound):

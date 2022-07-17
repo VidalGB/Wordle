@@ -11,4 +11,4 @@ playText;{'es':'Para continuar presiona [ENTER] o [ESPACIO]','en':'To continue p
 recordText;{'es':'¡Nuevo Récord!','en':'New Record!','por':'Novo Recorde!'}
 themeText;{'es':'Tema','en':'Theme','por':'Tema'}
 record;5
-wordList;['apodo', 'alias', 'artes', 'lapiz', 'abras']
+wordList;['lapiz', 'nueve', 'artes', 'cinco', 'polvo']
