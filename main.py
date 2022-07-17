@@ -60,53 +60,45 @@ def write(obj, writer):
   file.close()
 
 
-# logging basic config
+#Logging basic config
 logging.basicConfig(level = logging.DEBUG, filename = path('./data/app.log'), filemode = 'w', format = '%(name)s-%(levelname)s: %(message)s')
 
 
 #Game class, contains three main functions (logic, events, screen) and the functions of the objects
-class Game(object):
+class Game():
 
   def __init__(self):
+    logging.info('estableciendo variables de inicio')
 
 # Set the Gobal variables
-    logging.info('estableciendo variables de inicio')
     self.userText = ''
-    self.Attempts = 0
-    self.hits = 0
-    self.idiom = read('idiom')
-    self.record = int(read('record'))
     self.rowColor = {}
     self.rowLyrics = {}
-    self.colors = ast.literal_eval(read('colors'))
-    self.colorActive = self.colors['lightBlue']
-    self.colorPassive = self.colors['gray']
-    self.colorInput = self.colorPassive
-    self.colorCheck = self.colorPassive
-    self.colorCross = self.colorPassive
-    self.colorConfig = self.colors['white']
-    self.focusText = False
-    self.sendText = False
-    self.pressCheck = False
-    self.pressCheck = False
-    self.pressCross = False
-    self.pressConfig = False
-    self.win = False
-    self.newRecord = False
-    self.endScreen = False
-    self.configScreen = False
-    self.gameScreen = True
-    self.game = False
-    self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), 60)
+    self.attempts = self.hits = 0
+
+    self.idiom = read('idiom')
+    self.lenWord = int(read('length'))
+    self.record = int(read('record'))
+
     self.proportion = ast.literal_eval(read('proportion'))
     self.dicLanguage = ast.literal_eval(read('language'))
     self.dicPlayText = ast.literal_eval(read('playText'))
     self.dicEndText = ast.literal_eval(read('endText'))
     self.dicNewRecord = ast.literal_eval(read('recordText'))
-    self.lenWord = int(read('length'))
+    self.colors = ast.literal_eval(read('colors'))
+
+    self.colorActive = self.colors['lightBlue']
+    self.colorPassive = self.colors['gray']
+    self.colorInput = self.colorCheck = self.colorCross = self.colorPassive
+    self.colorConfig = self.colors['white']
+
+    self.focusText = self.sendText = self.pressCheck = self.pressCross = self.pressConfig = self.win = self.newRecord = self.endScreen = self.configScreen = self.play = False
+    self.gameScreen = True
+    self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), 60)
 
     logging.info('estableciondo color de la app')
-# Seletc the color app
+
+#   Seletc the color app
     if read('color') == 'white':
       self.colorBackground = self.colors['white']
       self.colorFont = self.colors['black']
@@ -128,60 +120,14 @@ class Game(object):
 
 #   Mouse events
       if event.type == Pg.MOUSEBUTTONDOWN:
-
-#     click on the check button
-        if not self.endScreen:
-          if self.checkButton.collidepoint(event.pos):
-            if len(self.userText) == int(read('length')):
-              self.sendText = True
-              self.pressCheck = True
-
-#       Click on the cross button
-          if self.crossButton.collidepoint(event.pos):
-            self.userText = ''
-            self.pressCross = True
-
-#       Click on the text input
-          if self.textInput.collidepoint(event.pos):
-            self.focusText = True
-          else:
-            self.focusText = False
-
-#       Click on the config button
-          posWidthCircke = (event.pos[0] - self.posCircle[0])**2
-          posHeightCircke = (event.pos[1] - self.posCircle[1])**2
-          if math.sqrt(posWidthCircke + posHeightCircke) < 15:
-            self.pressConfig = True
-            self.configScreen = True
-            self.gameScreen = False
-
+        self.mouseEvents(event)
 
 #   Keyboard envents
       if event.type == Pg.KEYDOWN:
         if event.key == Pg.K_ESCAPE:
           return True
-        elif event.key == Pg.K_SPACE:
-          if self.endScreen == True:
-            self.endScreen = False
-            self.game = False
-            self.Sound('./data/sound/keyboardKey.wav')
-        elif event.key == Pg.K_RETURN:
-          if self.endScreen == True:
-            self.endScreen = False
-            self.game = False
-            self.Sound('./data/sound/keyboardEnter.wav')
-          elif len(self.userText) == int(read('length')):
-            self.sendText = True
-            self.Sound('./data/sound/keyboardEnter.wav')
-        elif event.key == Pg.K_BACKSPACE:
-          self.userText = self.userText[:-1]
-          self.Sound('./data/sound/keyboardKey.wav')
-        else:
-          for letre in self.dicLanguage[self.idiom]:
-            if letre == event.unicode:
-              if self.focusText == True and len(self.userText) +1 <= int(read('length')):
-                self.userText += event.unicode
-                self.Sound('./data/sound/keyboardKey.wav')
+        self.keyboardEvents(event)
+
     return False
 
 
@@ -190,68 +136,24 @@ class Game(object):
     logging.info('calculando logica')
 
 #   New game
-    if not self.game:
-      self.game = True
-      self.newRecord = False
-      self.win = False
+    if not self.play:
+      self.play = self.flagCheckWord = True
+      self.newRecord = self.win = False
       self.userText = ''
-      self.randomWord()
+      self.attempts = 0
       self.rowColor = {}
       self.rowLyrics = {}
-      self.Attempts = 0
-      self.flagCheckWord = True
+      self.randomWord()
 
 #   Control word
     self.corretWord = []
     if self.sendText == True:
-      self.sendText = False
-      self.userWord = list(self.userText)
-      posUserWord = 0
-      for lyrics in self.userWord:
-        true = 0
-        if lyrics in self.ranWord:
-          true = 1
-          posRanWord = 0
-          for letters in self.ranWord:
-            if lyrics == letters:
-              if posRanWord == posUserWord:
-                true = 2
-            posRanWord += 1
-        letters = lyrics + ':' + str(true)
-        self.corretWord.append(letters)
-        posUserWord += 1
-      self.userText = ''
-
-#   Boxes color and lyrics
-#     Color the boxes
-      lyrics = []
-      for item in self.corretWord:
-        if '2' in item:
-          lyrics.append('green')
-        elif '1' in item:
-          lyrics.append('yellow')
-        else:
-          lyrics.append('red')
-        self.rowColor[self.Attempts] = lyrics
-
-#     Lyrics the boxes
-        letters = []
-        for item in self.corretWord:
-          List = item.split(':')
-          letters.append(List[0])
-          self.rowLyrics[self.Attempts] = letters
-      self.Attempts += 1
-
-#   Win check
-      letters = 0
-      for item in self.corretWord:
-        if '2' in item:
-          letters += 1
-      if letters == len(self.corretWord):
-        self.win = True
+      self.controlWord()
+      self.colorBoxes()
+      self.checkWin()
 
 #   End screen
-    if self.Attempts == 5 or self.win == True:
+    if self.attempts == 5 or self.win == True:
       self.endScreen = True
       if not self.win:
         if self.flagCheckWord:
@@ -259,7 +161,7 @@ class Game(object):
           if self.hits > 0:
             self.hits = 0
           self.flagCheckWord = False
-          
+
 #   Win
     if self.win:
       if self.flagCheckWord:
@@ -272,34 +174,8 @@ class Game(object):
           self.Sound('./data/sound/record.wav')
         self.flagCheckWord = False
 
-
 #   Press button
-#     Check button
-    if not self.pressCheck:
-      self.colorCheck = self.colorPassive
-    else:
-      self.colorCheck = self.colorActive
-      self.pressCheck = False
-
-#     Cross button
-    if not self.pressCross:
-      self.colorCross = self.colorPassive
-    else:
-      self.colorCross = self.colorActive
-      self.pressCross = False
-
-#     Config button
-    if not self.pressConfig:
-      self.colorConfig = self.colors['white']
-    else:
-      self.colorConfig = self.colorActive
-      self.pressConfig = False
-
-#   Focus on the text input
-    if self.focusText:
-      self.colorInput = self.colorActive
-    else:
-      self.colorInput = self.colorPassive
+    self.pressButton()
 
 
 # Game screen function
@@ -322,133 +198,208 @@ class Game(object):
 
 #   Update font size and text input, buttons measurements
     self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(boxHeight))
+
     self.textInput = Pg.Rect(widthRest + self.pixel(12, 'w'), heightRest + self.pixel(81.5, 'h'), rectWidth, boxHeight)
+
     self.checkButton = Pg.Rect(posCheck[0], posCheck[1], boxWidth, boxHeight)
     self.crossButton = Pg.Rect(posCross[0], posCross[1], boxWidth, boxHeight)
-    lineIcon = {'checkButton':[(posCheck[0]+self.pixel(3,'w'),posCheck[1]+self.pixel(6,'h')),(posCheck[0]+self.pixel(5,'w'),posCheck[1]+self.pixel(9,'h')),(posCheck[0]+self.pixel(5,'w'),posCheck[1]+self.pixel(9,'h')),(posCheck[0]+self.pixel(9,'w'),posCheck[1]+self.pixel(2,'h'))],'crossButton':[(posCross[0]+self.pixel(3,'w'),posCross[1]+self.pixel(2,'h')),(posCross[0]+self.pixel(8,'w'),posCross[1]+self.pixel(9,'h')),(posCross[0]+self.pixel(3,'w'),posCross[1]+self.pixel(9,'h')),(posCross[0]+self.pixel(8,'w'),posCross[1]+self.pixel(2,'h'))]}
+
+    lineIcon = {'checkButton':[(posCheck[0]+self.pixel(3,'w'),posCheck[1]+self.pixel(6,'h')),(posCheck[0]+self.pixel(5,'w'),posCheck[1]+self.pixel(9,'h')),(posCheck[0]+self.pixel(5,'w'),posCheck[1]+self.pixel(9,'h')),(posCheck[0]+self.pixel(9,'w'),posCheck[1]+self.pixel(2,'h'))],'crossButton':[(posCross[0]+self.pixel(3,'w'),posCross[1]+self.pixel(2,'h')),(posCross[0]+self.pixel(8,'w'),posCross[1]+self.pixel(9,'h')),(posCross[0]+self.pixel(3,'w'),posCross[1]+self.pixel(9,'h')),(posCross[0]+self.pixel(8,'w'),posCross[1]+self.pixel(2,'h'))]} # csv file
 
 #   Game screen
     if self.gameScreen:
       logging.info('pantalla de juego')
-#   Paint the Window and letters, boxes and text input
-      windows.fill(self.colorBackground)
-      for row in range(5):
-        for column in range(self.lenWord):
-          if row == self.Attempts:
-            Pg.draw.rect(windows, self.colorActive, Pg.Rect(widthRest + spaceWidth*(column+1) + (spaceWidth + boxWidth)*column, heightRest + spaceHeight*(row+1) + (spaceHeight + boxHeight)*row, boxWidth, boxHeight))
-          elif row > self.Attempts:
-            Pg.draw.rect(windows, self.colors['gray'], Pg.Rect(widthRest + spaceWidth*(column+1) + (spaceWidth + boxWidth)*column, heightRest + spaceHeight*(row+1) + (spaceHeight + boxHeight)*row, boxWidth, boxHeight))
-          else:
-            listColor = self.rowColor[row]
-            listLyrics = self.rowLyrics[row]
-            Pg.draw.rect(windows, self.colors[listColor[column]], Pg.Rect(widthRest + spaceWidth*(column+1) + (spaceWidth + boxWidth)*column, heightRest + spaceHeight*(row+1) + (spaceHeight + boxHeight)*row, boxWidth, boxHeight))
-
-#     lyrics
-            fontText = self.font.render(listLyrics[column], True, self.colorFont)
-            windows.blit(fontText, (self.pixel(2.4, 'w') + widthRest + spaceWidth*(column+1) + (spaceWidth + boxWidth)*column, (heightRest + spaceHeight*(row+1) + (spaceHeight + boxHeight)*row) - self.pixel(1, 'h'), boxWidth, boxHeight))
-
-#   Draw text input, check button box and cross button box
-      Pg.draw.rect(windows, self.colorInput, self.textInput)
-      Pg.draw.rect(windows, self.colorCheck, self.checkButton)
-      Pg.draw.rect(windows, self.colorCross, self.crossButton)
-
-#   Draw icon line
-      List = ['green', 'red']
-      m = 0
-      for icon in lineIcon:
-        for n in range(0, operator.length_hint(lineIcon[icon]), 2):
-          Pg.draw.line(windows, self.colors[List[m]], lineIcon[icon][n], lineIcon[icon][n+1], width = int(self.pixel(2, 'w')))
-        m += 1
-
-#   Paint the text of the input text
-      self.userText = self.userText.upper()
-      fontText = self.font.render(self.userText, True, self.colorFont)
-      windows.blit(fontText, (self.textInput.x + self.pixel(1, 'w'), self.textInput.y - self.pixel(1, 'h')))
-
-#   Create config icon
-      self.posCircle = (widthRest + self.width - self.pixel(3.5, 'w'), heightRest + self.height - self.pixel(3.5, 'h'))
-      Pg.draw.circle(windows, self.colorConfig, self.posCircle, (self.pixel(1.5, 'w') + self.pixel(1.5, 'h')))
-
-#     load gear image
-      gear = Pg.image.load('./data/image/gear.png')
-      gear = Pg.transform.scale(gear, (self.pixel(4, 'w'), self.pixel(4, 'h')))
-      windows.blit(gear, (self.posCircle[0] - self.pixel(2, 'w'), self.posCircle[1] - self.pixel(2, 'h')))
-
-#   Create the icon check word and its counter
-#     Draw text the counter
-      self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(self.pixel(5, 'h')))
-      textHits = self.font.render(str(self.hits), True, self.colorFont)
-      windows.blit(textHits, (widthRest + self.pixel(22.22, 'w'), heightRest + self.pixel(93.5, 'h')))
-
-#     Load check image
-      check = Pg.image.load('./data/image/check.png')
-      check = Pg.transform.scale(check, (self.pixel(6, 'w'), self.pixel(6, 'h')))
-      windows.blit(check, (widthRest + self.pixel(16.66, 'w'), heightRest + self.pixel(93.5, 'h')))
+      self.paintGameScreen(windows, widthRest = widthRest, heightRest = heightRest, posCheck = posCheck, posCross = posCross, boxWidth = boxWidth, boxHeight = boxHeight, spaceWidth = spaceWidth, spaceHeight = spaceHeight, rectWidth = rectWidth, lineIcon = lineIcon)
+      self.paintIconGameScreen(windows, widthRest = widthRest, heightRest = heightRest)
 
 #   End screen
     if self.endScreen:
       logging.info('pantalla de fin')
-
-#     Create the transparent surface
-      self.background = Pg.Surface((windows.get_width(), windows.get_height()))
-      self.background.set_alpha(200)
-      self.background.fill(self.colorBackground)
-      windows.blit(self.background, (0,0))
-
-#     Paint text the end game
-      self.font = Pg.font.Font(path('data/font/CascadiaMonoPLItalic.ttf'), int(boxHeight))
-      text = self.dicEndText[self.idiom]
-      if self.win:
-        fontText = self.font.render(text[1], True, self.colorFont)
-        windows.blit(fontText, (widthRest + self.pixel(25, 'w'), heightRest + self.pixel(25, 'h')))
-      else:
-        fontText = self.font.render(text[0], True, self.colorFont)
-        windows.blit(fontText, (widthRest + self.pixel(25, 'w'), heightRest + self.pixel(25, 'h')))
-
-#     Create the icon check word and its counter
-#       Draw text the counter
-      self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(self.pixel(5, 'h')))
-      textHits = self.font.render(str(self.hits), True, self.colorFont)
-      windows.blit(textHits, (widthRest + self.pixel(50, 'w'), heightRest + self.pixel(40, 'h')))
-
-#       Load check image
-      check = Pg.image.load('./data/image/check.png')
-      check = Pg.transform.scale(check, (self.pixel(6, 'w'), self.pixel(6, 'h')))
-      windows.blit(check, (widthRest + self.pixel(43.47826087, 'w'), heightRest + self.pixel(40, 'h')))
-
-#     Create the icon star record and its counter
-#       Draw text the counter
-      self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(self.pixel(5, 'h')))
-      textRecord = self.font.render(str(self.record), True, self.colorFont)
-      windows.blit(textRecord, (widthRest + self.pixel(50, 'w'), heightRest + self.pixel(46, 'h')))
-
-#       Draw text the New Record
-      if self.newRecord:
-        text = self.dicNewRecord[self.idiom]
-        textNewRecord = self.font.render(text, True, self.colorFont)
-        windows.blit(textNewRecord, (widthRest + self.pixel(53, 'w'), heightRest + self.pixel(46, 'h')))
-
-#       Load star image
-      star = Pg.image.load('./data/image/star.png')
-      star = Pg.transform.scale(star, (self.pixel(6, 'w'), self.pixel(6, 'h')))
-      windows.blit(star, (widthRest + self.pixel(43.47826087, 'w'), heightRest + self.pixel(46, 'h')))
-
-#     Paint text to continue play
-      if self.idiom == 'en':
-        posWidthText = self.pixel(19, 'w')
-      else:
-        posWidthText = self.pixel(11.11, 'w')
-      text = self.dicPlayText[self.idiom]
-      self.font = Pg.font.Font(path('data/font/CascadiaMonoPLBold.ttf'), int(self.pixel(3, 'h')))
-      playText = self.font.render(text, True, self.colorFont)
-      windows.blit(playText, (widthRest + posWidthText, heightRest + self.pixel(94, 'h')))
+      self.paintEndScreen(windows, widthRest = widthRest, heightRest = heightRest, boxHeight = boxHeight)
+      self.paintIconEndScreen(windows, widthRest = widthRest, heightRest = heightRest)
 
 #   Configuration screen
     if self.configScreen:
-      windows.fill(self.colorBackground)
+      self.paintConfigScreen(windows)
 
 #   Update window
     Pg.display.flip()
+
+
+# Events functions
+#   Mouse events
+  def mouseEvents(self, event):
+
+#     Click on the check button
+    if not self.endScreen:
+      if self.checkButton.collidepoint(event.pos):
+        if len(self.userText) == int(read('length')):
+          self.sendText = True
+          self.pressCheck = True
+
+#     Click on the cross button
+    if not self.endScreen:
+      if self.crossButton.collidepoint(event.pos):
+        self.userText = ''
+        self.pressCross = True
+
+#     Click on the text input
+    if not self.endScreen:
+      if self.textInput.collidepoint(event.pos):
+        self.focusText = True
+      else:
+        self.focusText = False
+
+#     Click on the config button
+    if not self.endScreen:
+      posWidthCircke = (event.pos[0] - self.posCircle[0])**2
+      posHeightCircke = (event.pos[1] - self.posCircle[1])**2
+      if math.sqrt(posWidthCircke + posHeightCircke) < 15:
+        self.pressConfig = True
+        self.configScreen = True
+        self.gameScreen = False
+
+#   Keyboard envents
+  def keyboardEvents(self, event):
+
+#     Key space
+    if event.key == Pg.K_SPACE:
+      if self.endScreen == True:
+        self.endScreen = False
+        self.play = False
+        self.Sound('./data/sound/keyboardKey.wav')
+
+#     Key enter
+    elif event.key == Pg.K_RETURN:
+      if self.endScreen == True:
+        self.endScreen = False
+        self.play = False
+        self.Sound('./data/sound/keyboardEnter.wav')
+      elif len(self.userText) == int(read('length')):
+        self.sendText = True
+        self.Sound('./data/sound/keyboardEnter.wav')
+
+#     Key backspace
+    elif event.key == Pg.K_BACKSPACE:
+      self.userText = self.userText[:-1]
+      self.Sound('./data/sound/keyboardKey.wav')
+
+#     Key vocabulary
+    else:
+      for letre in self.dicLanguage[self.idiom]:
+        if letre == event.unicode:
+          if self.focusText == True and len(self.userText) +1 <= int(read('length')):
+            self.userText += event.unicode
+            self.Sound('./data/sound/keyboardKey.wav')
+
+
+# Logic functions
+#   Control word
+  def controlWord(self):
+    self.sendText = False
+    self.userWord = list(self.userText)
+    posUserWord = 0
+    for lyrics in self.userWord:
+      true = 0
+      if lyrics in self.ranWord:
+        true = 1
+        posRanWord = 0
+        for letters in self.ranWord:
+          if lyrics == letters:
+            if posRanWord == posUserWord:
+              true = 2
+          posRanWord += 1
+      letters = lyrics + ':' + str(true)
+      self.corretWord.append(letters)
+      posUserWord += 1
+    self.userText = ''
+
+#   Boxes color and lyrics
+  def colorBoxes(self):
+
+#     Color the boxes
+    lyrics = []
+    for item in self.corretWord:
+      if '2' in item:
+        lyrics.append('green')
+      elif '1' in item:
+        lyrics.append('yellow')
+      else:
+        lyrics.append('red')
+      self.rowColor[self.attempts] = lyrics
+
+#     Lyrics the boxes
+      letters = []
+      for item in self.corretWord:
+        List = item.split(':')
+        letters.append(List[0])
+        self.rowLyrics[self.attempts] = letters
+    self.attempts += 1
+
+#   Win check
+  def checkWin(self):
+    letters = 0
+    for item in self.corretWord:
+      if '2' in item:
+        letters += 1
+    if letters == len(self.corretWord):
+      self.win = True
+
+#   Press button
+  def pressButton(self):
+
+#     Check button
+    if not self.pressCheck:
+      self.colorCheck = self.colorPassive
+    else:
+      self.colorCheck = self.colorActive
+      self.pressCheck = False
+
+#     Cross button
+    if not self.pressCross:
+      self.colorCross = self.colorPassive
+    else:
+      self.colorCross = self.colorActive
+      self.pressCross = False
+
+#     Config button
+    if not self.pressConfig:
+      self.colorConfig = self.colors['white']
+    else:
+      self.colorConfig = self.colorActive
+      self.pressConfig = False
+
+#     Focus on the text input
+    if self.focusText:
+      self.colorInput = self.colorActive
+    else:
+      self.colorInput = self.colorPassive
+
+#   Function for get random word
+  def randomWord(self):
+    self.play = True
+    with open (path(f"./data/words/{read('length')}words-{read('idiom')}.txt"), 'r', encoding = "utf-8") as file:
+      lines = file.readlines()
+      line = ''.join(lines)
+      word = line.split('\n')
+      max = len(word) - 1
+
+      while True:
+        n = random.randint(0, max)
+        self.ranWord = word[n]
+        logging.debug(f'Numero aleatorio {n}, palabra aleatoria {self.ranWord}')
+        wordList = ast.literal_eval(read('wordList'))
+        if self.ranWord not in wordList:
+          del wordList[0]
+          wordList.append(self.ranWord)
+          write('wordList', wordList)
+          break
+
+      self.ranWord = self.ranWord.upper()
+      self.ranWord = list(self.ranWord)
+      logging.info(f'Palabra a adivinar "{self.ranWord}"')
+      print(self.ranWord)
+      file.close()
 
 
 # Screen functions
@@ -475,33 +426,136 @@ class Game(object):
     elif obj == 'h':
       return por*self.height/100
 
+#   Piant and draw the element on the game screen
+  def paintGameScreen(self, windows, **karg):
 
-# Function for get random word
-  def randomWord(self):
-    self.game = True
-    with open (path(f"./data/words/{read('length')}words-{read('idiom')}.txt"), 'r', encoding = "utf-8") as file:
-      lines = file.readlines()
-      line = ''.join(lines)
-      word = line.split('\n')
-      max = len(word) - 1
-      while True:
-        n = random.randint(0, max)
-        self.ranWord = word[n]
-        logging.debug(f'Numero aleatorio {n}, palabra aleatoria {self.ranWord}')
-        wordList = ast.literal_eval(read('wordList'))
-        if self.ranWord not in wordList:
-          del wordList[0]
-          wordList.append(self.ranWord)
-          write('wordList', wordList)
-          break
-      self.ranWord = self.ranWord.upper()
-      self.ranWord = list(self.ranWord)
-      logging.info(f'Palabra a adivinar "{self.ranWord}"')
-      print(self.ranWord)
-      file.close()
+#     Paint the Window and letters, boxes and text input
+    windows.fill(self.colorBackground)
+    for row in range(5):
+      for column in range(self.lenWord):
+        if row == self.attempts:
+          Pg.draw.rect(windows, self.colorActive, Pg.Rect(karg['widthRest'] + karg['spaceWidth']*(column+1) + (karg['spaceWidth'] + karg['boxWidth'])*column, karg['heightRest'] + karg['spaceHeight']*(row+1) + (karg['spaceHeight'] + karg['boxHeight'])*row, karg['boxWidth'], karg['boxHeight']))
+        elif row > self.attempts:
+          Pg.draw.rect(windows, self.colors['gray'], Pg.Rect(karg['widthRest'] + karg['spaceWidth']*(column+1) + (karg['spaceWidth'] + karg['boxWidth'])*column, karg['heightRest'] + karg['spaceHeight']*(row+1) + (karg['spaceHeight'] + karg['boxHeight'])*row, karg['boxWidth'], karg['boxHeight']))
+        else:
+          listColor = self.rowColor[row]
+          listLyrics = self.rowLyrics[row]
+          Pg.draw.rect(windows, self.colors[listColor[column]], Pg.Rect(karg['widthRest'] + karg['spaceWidth']*(column+1) + (karg['spaceWidth'] + karg['boxWidth'])*column, karg['heightRest'] + karg['spaceHeight']*(row+1) + (karg['spaceHeight'] + karg['boxHeight'])*row, karg['boxWidth'], karg['boxHeight']))
 
+#       lyrics
+          fontText = self.font.render(listLyrics[column], True, self.colorFont)
+          windows.blit(fontText, (self.pixel(2.4, 'w') + karg['widthRest'] + karg['spaceWidth']*(column+1) + (karg['spaceWidth'] + karg['boxWidth'])*column, (karg['heightRest'] + karg['spaceHeight']*(row+1) + (karg['spaceHeight'] + karg['boxHeight'])*row) - self.pixel(1, 'h'), karg['boxWidth'], karg['boxHeight']))
 
-# Sound Function
+#     Draw text input, check button box and cross button box
+    Pg.draw.rect(windows, self.colorInput, self.textInput)
+    Pg.draw.rect(windows, self.colorCheck, self.checkButton)
+    Pg.draw.rect(windows, self.colorCross, self.crossButton)
+
+#     Draw icon line (check and cross)
+    List = ['green', 'red']
+    nun = 0
+    for icon in karg['lineIcon']:
+      for n in range(0, operator.length_hint(karg['lineIcon'][icon]), 2):
+        Pg.draw.line(windows, self.colors[List[nun]], karg['lineIcon'][icon][n], karg['lineIcon'][icon][n+1], width = int(self.pixel(2, 'w')))
+      nun += 1
+
+#     Paint the text of the input text
+    self.userText = self.userText.upper()
+    fontText = self.font.render(self.userText, True, self.colorFont)
+    windows.blit(fontText, (self.textInput.x + self.pixel(1, 'w'), self.textInput.y - self.pixel(1, 'h')))
+
+#   Piant and draw the Icon on the game screen
+  def paintIconGameScreen(self, windows, **karg):
+
+#     Create config icon
+    self.posCircle = (karg['widthRest'] + self.width - self.pixel(3.5, 'w'), karg['heightRest'] + self.height - self.pixel(3.5, 'h'))
+    Pg.draw.circle(windows, self.colorConfig, self.posCircle, (self.pixel(1.5, 'w') + self.pixel(1.5, 'h')))
+
+#       load gear image
+    gear = Pg.image.load('./data/image/gear.png')
+    gear = Pg.transform.scale(gear, (self.pixel(4, 'w'), self.pixel(4, 'h')))
+    windows.blit(gear, (self.posCircle[0] - self.pixel(2, 'w'), self.posCircle[1] - self.pixel(2, 'h')))
+
+#     Create the icon check word and its counter
+#       Draw text the counter
+    self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(self.pixel(5, 'h')))
+    textHits = self.font.render(str(self.hits), True, self.colorFont)
+    windows.blit(textHits, (karg['widthRest'] + self.pixel(22.22, 'w'), karg['heightRest'] + self.pixel(93.5, 'h')))
+
+#       Load check image
+    check = Pg.image.load('./data/image/check.png')
+    check = Pg.transform.scale(check, (self.pixel(6, 'w'), self.pixel(6, 'h')))
+    windows.blit(check, (karg['widthRest'] + self.pixel(16.66, 'w'), karg['heightRest'] + self.pixel(93.5, 'h')))
+
+#   Piant and draw the element on the end screen
+  def paintEndScreen(self, windows, **karg):
+
+#     Create the transparent surface
+    self.background = Pg.Surface((windows.get_width(), windows.get_height()))
+    self.background.set_alpha(200)
+    self.background.fill(self.colorBackground)
+    windows.blit(self.background, (0,0))
+
+#     Paint text the end game
+    self.font = Pg.font.Font(path('data/font/CascadiaMonoPLItalic.ttf'), int(karg['boxHeight']))
+    text = self.dicEndText[self.idiom]
+    if self.win:
+      fontText = self.font.render(text[1], True, self.colorFont)
+      windows.blit(fontText, (karg['widthRest'] + self.pixel(25, 'w'), karg['heightRest'] + self.pixel(25, 'h')))
+    else:
+      fontText = self.font.render(text[0], True, self.colorFont)
+      windows.blit(fontText, (karg['widthRest'] + self.pixel(25, 'w'), karg['heightRest'] + self.pixel(25, 'h')))
+
+#     Paint text to continue play
+    if self.idiom == 'en':
+      posWidthText = self.pixel(19, 'w')
+    else:
+      posWidthText = self.pixel(11.11, 'w')
+    text = self.dicPlayText[self.idiom]
+    self.font = Pg.font.Font(path('data/font/CascadiaMonoPLBold.ttf'), int(self.pixel(3, 'h')))
+    playText = self.font.render(text, True, self.colorFont)
+    windows.blit(playText, (karg['widthRest'] + posWidthText, karg['heightRest'] + self.pixel(94, 'h')))
+
+#   Piant and draw the Icon on the end screen
+  def paintIconEndScreen(self, windows, **karg):
+
+#     Create the icon check word and its counter
+#       Draw text the counter
+    self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(self.pixel(5, 'h')))
+    textHits = self.font.render(str(self.hits), True, self.colorFont)
+    windows.blit(textHits, (karg['widthRest'] + self.pixel(50, 'w'), karg['heightRest'] + self.pixel(40, 'h')))
+
+#       Load check image
+    check = Pg.image.load('./data/image/check.png')
+    check = Pg.transform.scale(check, (self.pixel(6, 'w'), self.pixel(6, 'h')))
+    windows.blit(check, (karg['widthRest'] + self.pixel(43.47826087, 'w'), karg['heightRest'] + self.pixel(40, 'h')))
+
+#     Create the icon star record and its counter
+#       Draw text the counter
+    self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(self.pixel(5, 'h')))
+    textRecord = self.font.render(str(self.record), True, self.colorFont)
+    windows.blit(textRecord, (karg['widthRest'] + self.pixel(50, 'w'), karg['heightRest'] + self.pixel(46, 'h')))
+
+#       Draw text the New Record
+    if self.newRecord:
+      text = self.dicNewRecord[self.idiom]
+      textNewRecord = self.font.render(text, True, self.colorFont)
+      windows.blit(textNewRecord, (karg['widthRest'] + self.pixel(53, 'w'), karg['heightRest'] + self.pixel(46, 'h')))
+
+#       Load star image
+    star = Pg.image.load('./data/image/star.png')
+    star = Pg.transform.scale(star, (self.pixel(6, 'w'), self.pixel(6, 'h')))
+    windows.blit(star, (karg['widthRest'] + self.pixel(43.47826087, 'w'), karg['heightRest'] + self.pixel(46, 'h')))
+
+#   Piant and draw the element on the configuration screen
+  def paintConfigScreen(self, windows, **karg):
+    windows.fill(self.colorBackground)
+    text = self.dicThemeText[self.idiom]
+    textTheme = self.font.render(text, True, self.colorFont)
+    windows.blit(textTheme, (karg['widthRest'] + self.pixel(53, 'w'), karg['heightRest'] + self.pixel(46, 'h')))
+    
+
+#Sound Function
   def Sound(self, sound):
     soundPlay = Pg.mixer.Sound(path(sound))
     Pg.mixer.Sound.play(soundPlay)
@@ -510,15 +564,15 @@ class Game(object):
 #Main function
 def main():
 
-#   Starting pygame
+# Starting pygame
   logging.info('iniciando pygame')
   Pg.init()
 
-#   Select icon for the app
+# Select icon for the app
   logo = Pg.image.load(path('./data/image/logo.png'))
   Pg.display.set_icon(logo)
 
-#    Window measurements, title selec and mouse config
+# Window measurements, title selec and mouse config
   windows = Pg.display.set_mode((int(read('width')), int(read('height'))), Pg.RESIZABLE)
   Pg.display.set_caption("Wordle")
   Pg.mouse.set_visible(True)
@@ -526,7 +580,7 @@ def main():
   gameOver = False
   game = Game()
   logging.info('entrando al bucle principal')
-#   Game loop
+# Game loop
   while not gameOver:
     gameOver = game.events()
     game.logic()
