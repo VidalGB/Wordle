@@ -17,8 +17,6 @@ import csv
 import ast
 import logging
 
-# logging basic config
-logging.basicConfig(level = logging.DEBUG, filename = './data/app.log', filemode = 'w', format = '%(name)s-%(levelname)s: %(message)s')
 
 #Path search
 def path(relativePath):
@@ -33,8 +31,7 @@ def path(relativePath):
 #Read and write files functions
 def read(obj):
   logging.info(f'leyendo el archivo "datos.csv", linea: {obj}')
-  paht = path('data/data.csv')
-  with open (paht, 'r', encoding="utf-8") as file:
+  with open (path('data/data.csv'), 'r', encoding="utf-8") as file:
     content = csv.reader(file, delimiter = ';')
     for line in content:
       if line[0] == obj:
@@ -44,8 +41,7 @@ def read(obj):
 def write(obj, writer):
   save = []
   n = 0
-  paht = path('data/data.csv')
-  with open (paht, 'r', encoding="utf-8") as file:
+  with open (path('data/data.csv'), 'r', encoding="utf-8") as file:
     content = csv.reader(file, delimiter = ';')
     for line in content:
       if line[0] == obj:
@@ -57,12 +53,15 @@ def write(obj, writer):
         del save[n]
       n += 1
   logging.info(f'escribiendo el archivo "datos.csv", linea: {obj}, dato: {writer}')
-  paht = path('data/data.csv')
-  with open (paht, 'w', newline = '') as file:
+  with open (path('data/data.csv'), 'w', newline = '') as file:
     write = csv.writer(file, delimiter = ';')
     write.writerows(save)
     write.writerow([obj, writer])
   file.close()
+
+
+# logging basic config
+logging.basicConfig(level = logging.DEBUG, filename = path('./data/app.log'), filemode = 'w', format = '%(name)s-%(levelname)s: %(message)s')
 
 
 #Game class, contains three main functions (logic, events, screen) and the functions of the objects
@@ -93,15 +92,17 @@ class Game(object):
     self.pressCross = False
     self.pressConfig = False
     self.win = False
+    self.newRecord = False
     self.endScreen = False
     self.configScreen = False
     self.gameScreen = True
     self.game = False
-    self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', 60)
+    self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), 60)
     self.proportion = ast.literal_eval(read('proportion'))
     self.dicLanguage = ast.literal_eval(read('language'))
     self.dicPlayText = ast.literal_eval(read('playText'))
     self.dicEndText = ast.literal_eval(read('endText'))
+    self.dicNewRecord = ast.literal_eval(read('recordText'))
     self.lenWord = int(read('length'))
 
     logging.info('estableciondo color de la app')
@@ -163,19 +164,24 @@ class Game(object):
           if self.endScreen == True:
             self.endScreen = False
             self.game = False
+            self.Sound('./data/sound/keyboardKey.wav')
         elif event.key == Pg.K_RETURN:
           if self.endScreen == True:
             self.endScreen = False
             self.game = False
+            self.Sound('./data/sound/keyboardEnter.wav')
           elif len(self.userText) == int(read('length')):
             self.sendText = True
+            self.Sound('./data/sound/keyboardEnter.wav')
         elif event.key == Pg.K_BACKSPACE:
           self.userText = self.userText[:-1]
+          self.Sound('./data/sound/keyboardKey.wav')
         else:
           for letre in self.dicLanguage[self.idiom]:
             if letre == event.unicode:
               if self.focusText == True and len(self.userText) +1 <= int(read('length')):
                 self.userText += event.unicode
+                self.Sound('./data/sound/keyboardKey.wav')
     return False
 
 
@@ -186,13 +192,14 @@ class Game(object):
 #   New game
     if not self.game:
       self.game = True
+      self.newRecord = False
       self.win = False
       self.userText = ''
       self.randomWord()
       self.rowColor = {}
       self.rowLyrics = {}
       self.Attempts = 0
-      self.flackCheckWord = True
+      self.flagCheckWord = True
 
 #   Control word
     self.corretWord = []
@@ -247,18 +254,23 @@ class Game(object):
     if self.Attempts == 5 or self.win == True:
       self.endScreen = True
       if not self.win:
-        if self.flackCheckWord:
+        if self.flagCheckWord:
+          self.Sound('./data/sound/gameOver.wav')
           if self.hits > 0:
             self.hits = 0
-          self.flackCheckWord = False
+          self.flagCheckWord = False
+          
 #   Win
     if self.win:
-      if self.flackCheckWord:
+      if self.flagCheckWord:
+        self.Sound('./data/sound/win.wav')
         self.hits += 1
         if self.hits > self.record:
           self.record = self.hits
           write('record', self.record)
-        self.flackCheckWord = False
+          self.newRecord = True
+          self.Sound('./data/sound/record.wav')
+        self.flagCheckWord = False
 
 
 #   Press button
@@ -309,7 +321,7 @@ class Game(object):
     rectWidth = self.pixel(self.proportion[self.lenWord][4], 'w')
 
 #   Update font size and text input, buttons measurements
-    self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', int(boxHeight))
+    self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(boxHeight))
     self.textInput = Pg.Rect(widthRest + self.pixel(12, 'w'), heightRest + self.pixel(81.5, 'h'), rectWidth, boxHeight)
     self.checkButton = Pg.Rect(posCheck[0], posCheck[1], boxWidth, boxHeight)
     self.crossButton = Pg.Rect(posCross[0], posCross[1], boxWidth, boxHeight)
@@ -364,7 +376,7 @@ class Game(object):
 
 #   Create the icon check word and its counter
 #     Draw text the counter
-      self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', int(self.pixel(5, 'h')))
+      self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(self.pixel(5, 'h')))
       textHits = self.font.render(str(self.hits), True, self.colorFont)
       windows.blit(textHits, (widthRest + self.pixel(22.22, 'w'), heightRest + self.pixel(93.5, 'h')))
 
@@ -384,7 +396,7 @@ class Game(object):
       windows.blit(self.background, (0,0))
 
 #     Paint text the end game
-      self.font = Pg.font.Font('data/font/CascadiaMonoPLItalic.ttf', int(boxHeight))
+      self.font = Pg.font.Font(path('data/font/CascadiaMonoPLItalic.ttf'), int(boxHeight))
       text = self.dicEndText[self.idiom]
       if self.win:
         fontText = self.font.render(text[1], True, self.colorFont)
@@ -395,7 +407,7 @@ class Game(object):
 
 #     Create the icon check word and its counter
 #       Draw text the counter
-      self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', int(self.pixel(5, 'h')))
+      self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(self.pixel(5, 'h')))
       textHits = self.font.render(str(self.hits), True, self.colorFont)
       windows.blit(textHits, (widthRest + self.pixel(50, 'w'), heightRest + self.pixel(40, 'h')))
 
@@ -406,9 +418,15 @@ class Game(object):
 
 #     Create the icon star record and its counter
 #       Draw text the counter
-      self.font = Pg.font.Font('data/font/CascadiaMonoPL.ttf', int(self.pixel(5, 'h')))
+      self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(self.pixel(5, 'h')))
       textRecord = self.font.render(str(self.record), True, self.colorFont)
       windows.blit(textRecord, (widthRest + self.pixel(50, 'w'), heightRest + self.pixel(46, 'h')))
+
+#       Draw text the New Record
+      if self.newRecord:
+        text = self.dicNewRecord[self.idiom]
+        textNewRecord = self.font.render(text, True, self.colorFont)
+        windows.blit(textNewRecord, (widthRest + self.pixel(53, 'w'), heightRest + self.pixel(46, 'h')))
 
 #       Load star image
       star = Pg.image.load('./data/image/star.png')
@@ -421,7 +439,7 @@ class Game(object):
       else:
         posWidthText = self.pixel(11.11, 'w')
       text = self.dicPlayText[self.idiom]
-      self.font = Pg.font.Font('data/font/CascadiaMonoPLBold.ttf', int(self.pixel(3, 'h')))
+      self.font = Pg.font.Font(path('data/font/CascadiaMonoPLBold.ttf'), int(self.pixel(3, 'h')))
       playText = self.font.render(text, True, self.colorFont)
       windows.blit(playText, (widthRest + posWidthText, heightRest + self.pixel(94, 'h')))
 
@@ -461,8 +479,7 @@ class Game(object):
 # Function for get random word
   def randomWord(self):
     self.game = True
-    paht = path(f"./data/words/{read('length')}words-{read('idiom')}.txt")
-    with open (paht, 'r', encoding = "utf-8") as file:
+    with open (path(f"./data/words/{read('length')}words-{read('idiom')}.txt"), 'r', encoding = "utf-8") as file:
       lines = file.readlines()
       line = ''.join(lines)
       word = line.split('\n')
@@ -482,6 +499,12 @@ class Game(object):
       logging.info(f'Palabra a adivinar "{self.ranWord}"')
       print(self.ranWord)
       file.close()
+
+
+# Sound Function
+  def Sound(self, sound):
+    soundPlay = Pg.mixer.Sound(path(sound))
+    Pg.mixer.Sound.play(soundPlay)
 
 
 #Main function
@@ -508,7 +531,7 @@ def main():
     gameOver = game.events()
     game.logic()
     game.screen(windows)
-    clock.tick(90)
+    clock.tick(60)
   logging.warning('saliendo bucle principal')
   Pg.quit()
   sys.exit()
