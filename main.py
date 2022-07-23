@@ -85,7 +85,7 @@ class Game():
     self.dicPlayText = ast.literal_eval(read('playText'))
     self.dicEndText = ast.literal_eval(read('endText'))
     self.dicNewRecord = ast.literal_eval(read('recordText'))
-    self.dicThemeText = ast.literal_eval(read('themeText'))
+    self.listConfigText = ast.literal_eval(read('configText'))
     self.colors = ast.literal_eval(read('colors'))
 
     self.colorActive = self.colors['lightBlue']
@@ -128,7 +128,6 @@ class Game():
         if event.key == Pg.K_ESCAPE:
           return True
         self.keyboardEvents(event)
-
     return False
 
 
@@ -180,7 +179,7 @@ class Game():
 
 
 # Game screen function
-  def screen(self, windows):
+  def screen(self, windows, clock):
     logging.info('pintando pantalla')
 
 #   Window resize
@@ -222,6 +221,11 @@ class Game():
 #   Configuration screen
     if self.configScreen:
       self.paintConfigScreen(windows, widthRest = widthRest, heightRest = heightRest)
+      self.drawTextConfigScreen(windows, widthRest = widthRest, heightRest = heightRest)
+
+    intFps = str(int(clock.get_fps()))
+    fps = self.font.render(intFps, True, self.colorFont)
+    windows.blit(fps, (0,0))
 
 #   Update window
     Pg.display.flip()
@@ -550,25 +554,81 @@ class Game():
 
 #   Piant and draw the element on the configuration screen
   def paintConfigScreen(self, windows, **karg):
-    spaceWidth = self.pixel(3, 'w')
+    spaceWidth = self.pixel(1, 'w')
     spaceHeight = self.pixel(2, 'h')
 
     windows.fill(self.colorBackground)
 
+  def drawTextConfigScreen(self, windows, **karg):
     self.font = Pg.font.Font(path('data/font/CascadiaMonoPLBold.ttf'), int(self.pixel(5, 'h')))
-    text = self.dicThemeText[self.idiom]
-    textTheme = self.font.render(text, True, self.colorFont)
-    windows.blit(textTheme, (karg['widthRest'] + self.pixel(8, 'w'), karg['heightRest'] + self.pixel(12, 'h')))
 
-    for row in range(4):
-      for column in range(2):
-        initLine = (karg['widthRest'] + spaceWidth*(column+1) + (spaceWidth + (self.pixel(7, 'w')))*column, karg['heightRest'] + spaceHeight*(row+1) + (spaceHeight + (self.pixel(18, 'h')))*row)
-        endLine = (karg['widthRest'] + spaceWidth*(column+1) + (spaceWidth + (self.pixel(32, 'w')))*column, karg['heightRest'] + spaceHeight*(row+1) + (spaceHeight + (self.pixel(18, 'h')))*row)
-        Pg.draw.line(windows, self.colorFont, initLine, endLine, width = int(self.pixel(1, 'w')))
+#   Theme text
+    textTheme = self.font.render(self.listConfigText[0][self.idiom], True, self.colorFont)
+    windows.blit(textTheme, (karg['widthRest'] + self.pixel(15, 'w'), karg['heightRest'] + self.pixel(12, 'h')))
+
+#   Sound text
+    textSound = self.font.render(self.listConfigText[2][self.idiom], True, self.colorFont)
+    windows.blit(textSound, (karg['widthRest'] + self.pixel(58, 'w'), karg['heightRest'] + self.pixel(12, 'h')))
+
+#   dificulty text
+    dificulText = self.font.render(self.listConfigText[4][self.idiom], True, self.colorFont)
+    windows.blit(dificulText, (karg['widthRest'] + self.pixel(15, 'w'), karg['heightRest'] + self.pixel(45, 'h')))
+
+#   idiom text
+    idiomText = self.font.render(self.listConfigText[6][self.idiom], True, self.colorFont)
+    windows.blit(idiomText, (karg['widthRest'] + self.pixel(58, 'w'), karg['heightRest'] + self.pixel(45, 'h')))
+
+    self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(self.pixel(5, 'h')))
+
+#   Texts Theme
+#   Theme light text
+    thmeLight = self.font.render(self.listConfigText[1][self.idiom][0], True, self.colorFont)
+    windows.blit(thmeLight, (karg['widthRest'] + self.pixel(17, 'w'), karg['heightRest'] + self.pixel(22, 'h')))
+
+#   Theme dark text
+    themeDark = self.font.render(self.listConfigText[1][self.idiom][1], True, self.colorFont)
+    windows.blit(themeDark, (karg['widthRest'] + self.pixel(17, 'w'), karg['heightRest'] + self.pixel(28, 'h')))
+
+#   Sound text
+    soundText = self.font.render(self.listConfigText[3][self.idiom], True, self.colorFont)
+    windows.blit(soundText, (karg['widthRest'] + self.pixel(60, 'w'), karg['heightRest'] + self.pixel(22, 'h')))
+
+#   Texts dificulty
+#   Easy dificulty text
+    easyDificulText = self.font.render(self.listConfigText[5][self.idiom][0], True, self.colorFont)
+    windows.blit(easyDificulText, (karg['widthRest'] + self.pixel(17, 'w'), karg['heightRest'] + self.pixel(61, 'h')))
+
+#   Normal dificulty text
+    normalDificulText = self.font.render(self.listConfigText[5][self.idiom][1], True, self.colorFont)
+    windows.blit(normalDificulText, (karg['widthRest'] + self.pixel(17, 'w'), karg['heightRest'] + self.pixel(67, 'h')))
+
+#   Hard dificulty text
+    hardDificulText = self.font.render(self.listConfigText[5][self.idiom][2], True, self.colorFont)
+    windows.blit(hardDificulText, (karg['widthRest'] + self.pixel(17, 'w'), karg['heightRest'] + self.pixel(73, 'h')))
+
+#   Extreme dificulty text
+    extremeDificulText = self.font.render(self.listConfigText[5][self.idiom][3], True, self.colorFont)
+    windows.blit(extremeDificulText, (karg['widthRest'] + self.pixel(17, 'w'), karg['heightRest'] + self.pixel(79, 'h')))
+
+    self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), int(self.pixel(3, 'h')))
+
+#   Texts idiom
+#   Spanish text
+    spanishText = self.font.render(self.listConfigText[7][self.idiom][0], True, self.colorFont)
+    windows.blit(spanishText, (karg['widthRest'] + self.pixel(60, 'w'), karg['heightRest'] + self.pixel(61, 'h')))
+
+#   English text
+    englishText = self.font.render(self.listConfigText[7][self.idiom][1], True, self.colorFont)
+    windows.blit(englishText, (karg['widthRest'] + self.pixel(60, 'w'), karg['heightRest'] + self.pixel(67, 'h')))
+
+#   Portuguese text
+    portugueseText = self.font.render(self.listConfigText[7][self.idiom][2], True, self.colorFont)
+    windows.blit(portugueseText, (karg['widthRest'] + self.pixel(60, 'w'), karg['heightRest'] + self.pixel(73, 'h')))
 
 #Sound Function
   def Sound(self, sound):
     soundPlay = Pg.mixer.Sound(path(sound))
+    print(Pg.mixer.Sound.get_volume(soundPlay))
     Pg.mixer.Sound.play(soundPlay)
 
 
@@ -595,7 +655,7 @@ def main():
   while not gameOver:
     gameOver = game.events()
     game.logic()
-    game.screen(windows)
+    game.screen(windows, clock)
     clock.tick(60)
   logging.warning('saliendo bucle principal')
   Pg.quit()
