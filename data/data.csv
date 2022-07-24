@@ -1,6 +1,3 @@
-color;white
-height;500
-width;500
 length;5
 proportion;{4:[6.5, 1.5, 12, 12, 30], 5:[4, 1.5, 12, 12, 37], 6:[2.3, 1.5, 12, 12, 44]}
 idiom;es
@@ -9,7 +6,12 @@ endText;{'es':['DERROTA','VICTORIA'],'en':['DEFEAT','VICTORY'],'por':['DERROTA',
 colors;{'lightBlue': (141,182,205), 'black': (0, 0, 0), 'white': (255, 255, 255), 'yellow': (255,215,0), 'gray': (205,201,201), 'red': (238,0,0), 'green': (50,205,50), 'blue': (24,116,205)}
 playText;{'es':'Para continuar presiona [ENTER] o [ESPACIO]','en':'To continue press [ENTER] or [SPACE]','por':'Para continuar, pressione [ENTER] ou [ESPAÇO]'}
 recordText;{'es':'¡Nuevo Récord!','en':'New Record!','por':'Novo Recorde!'}
-configText;[{'es': 'Tema', 'en': 'Theme', 'por': 'Tema'} , {'es': ['Claro','Oscuro'], 'en': ['Light', 'Dark'], 'por': ['Claro','Escuro']} , {'es': 'Sonidos', 'en': 'Sounds', 'por': 'Sons'} , {'es': 'Efectos', 'en': 'Effects', 'por': 'Efeitos'} , {'es': 'Dificultad', 'en': 'Difficulty', 'por': 'Dificuldade'} , {'es': ['Fácil', 'Normal', 'Difícil', 'Extremo'], 'en': ['Easy', 'Normal', 'Hard', 'Extreme'], 'por': ['Fácil', 'Normal', 'Difícil', 'Extremo']} , {'es': 'Lenguaje', 'en': 'Language', 'por': 'Linguagem'} , {'es': ['Inglés (English)', 'Español', 'Portugués (Português)'] ,'en': ['Spanish (Español)', 'English' ,'Portuguese (Português)'] , 'por': ['Espanhol (Español)', 'Inglês (English)', 'Português']}]
+configText;[{'es': 'Tema', 'en': 'Theme', 'por': 'Tema'} , {'es': ['Claro','Oscuro'], 'en': ['Light', 'Dark'], 'por': ['Claro','Escuro']} , {'es': 'Sonidos', 'en': 'Sounds', 'por': 'Sons'} , {'es': 'Efectos', 'en': 'Effects', 'por': 'Efeitos'} , {'es': 'Dificultad', 'en': 'Difficulty', 'por': 'Dificuldade'} , {'es': ['Fácil', 'Normal', 'Difícil', 'Extremo'], 'en': ['Easy', 'Normal', 'Hard', 'Extreme'], 'por': ['Fácil', 'Normal', 'Difícil', 'Extremo']} , {'es': 'Lenguaje', 'en': 'Language', 'por': 'Linguagem'} , ['English', 'Español', 'Português']]
 record;6
 volumenValue;1.0
-wordList;['lapiz', 'casas', 'abras', 'corre', 'gorro']
+exitText;{'es':'Para salir presiona [ENTER] o [ESPACIO]','en':'To exit press [ENTER] or [SPACE]','por':'Para sair pressione [ENTER] ou [ESPAÇO]'}
+color;white
+music;False
+wordList;['gorro', 'siete', 'corre', 'raton', 'abras']
+width;500
+height;500
