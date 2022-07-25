@@ -79,6 +79,7 @@ class Game():
     self.idiom = read('idiom')
     self.lenWord = int(read('length'))
     self.record = int(read('record'))
+    self.volumenLevel = float(read('volumenValue'))
 
     self.proportion = ast.literal_eval(read('proportion'))
     self.dicLanguage = ast.literal_eval(read('language'))
@@ -196,19 +197,23 @@ class Game():
           self.Sound('./data/sound/record.wav')
         self.flagCheckWord = False
 
+    if self.configScreen:
 #   press the buttons idioms
-    if self.pressButtonEsIdiom:
-      write('idiom', 'es')
-      self.buttonIdiomColors = [1,0,0]
-    if self.pressButtonEnIdiom:
-      write('idiom', 'en')
-      self.buttonIdiomColors = [0,1,0]
-    if self.pressButtonPorIdiom:
-      write('idiom', 'por')
-      self.buttonIdiomColors = [0,0,1]
+      if self.pressButtonEsIdiom:
+        write('idiom', 'es')
+        self.randomWord()
+        self.pressButtonEsIdiom = False
+      if self.pressButtonEnIdiom:
+        write('idiom', 'en')
+        self.randomWord()
+        self.pressButtonEnIdiom = False
+      if self.pressButtonPorIdiom:
+        write('idiom', 'por')
+        self.randomWord()
+        self.pressButtonPorIdiom = False
 
-    self.colorsButtonDificulty()
-    self.colorsButtonIdiom()
+      self.colorsButtonDificulty()
+      self.colorsButtonIdiom()
 
 #   Press button
     self.pressButton()
@@ -312,7 +317,25 @@ class Game():
           self.colorButtonEffectsSounds = self.colorActive
           self.pressButtonEffectsSounds = True
         write('music', str(self.music))
+      
+      if self.buttonEnIdiom.collidepoint(event.pos):
+        self.pressButtonEnIdiom = True
+        self.idiom = 'en'
+      
+      if self.buttonEsIdiom.collidepoint(event.pos):
+        self.pressButtonEsIdiom = True
+        self.idiom = 'es'
 
+      if self.buttonPorIdiom.collidepoint(event.pos):
+        self.pressButtonPorIdiom = True
+        self.idiom = 'por'
+      
+      
+      
+#     Click on the volumen sound
+      if self.buttonVolumenSounds.collidepoint(event.pos):
+        if self.music:
+          self.setVolumenLevel()
 
 #     Click on the config button
     if not self.endScreen:
@@ -443,8 +466,13 @@ class Game():
         self.colorBackground = self.colors['white']
         self.colorFont = self.colors['black']
         self.colorActive = self.colors['lightBlue']
+
+#       Update colors
         self.buttonColors = [self.colorPassive, self.colorActive]
         self.buttonThemeColors = [1,0]
+        self.colorButtonEffectsSounds = self.colorPassive
+        if self.music:
+          self.colorButtonEffectsSounds = self.colorActive
         write('color', 'white')
       self.pressButtnLightTheme = False
 
@@ -454,8 +482,13 @@ class Game():
         self.colorBackground = self.colors['black']
         self.colorFont = self.colors['white']
         self.colorActive = self.colors['blue']
+
+#       Update colors
         self.buttonColors = [self.colorPassive, self.colorActive]
         self.buttonThemeColors = [0,1]
+        self.colorButtonEffectsSounds = self.colorPassive
+        if self.music:
+          self.colorButtonEffectsSounds = self.colorActive
         write('color', 'dark')
       self.pressButtnDarkTheme = False
 
@@ -502,11 +535,42 @@ class Game():
 #   Function for colors button idiom
   def colorsButtonIdiom(self):
     if self.idiom == 'es':
-      self.buttonIdiomColors = [1,0,0]
+      self.buttonIdiomColors = [0,1,0]
     elif self.idiom == 'en':
-      self.buttonIdiomColors =  [0,1,0]
+      self.buttonIdiomColors =  [1,0,0]
     elif self.idiom == 'por':
       self.buttonIdiomColors = [0,0,1]
+
+  def getVolumenLevel(self):
+    volumenValue = read('volumenValue')
+    volumenValue = volumenValue.split('.')
+    if volumenValue[0] == '1':
+      return '100%'
+    elif volumenValue[1] == '25':
+      return '25%'
+    elif volumenValue[1] == '5':
+      return '50%'
+    elif volumenValue[1] == '75':
+      return '75%'
+
+  def setVolumenLevel(self):
+    volumenValue = read('volumenValue')
+    volumenValue = volumenValue.split('.')
+    volumenValue[0] = int(volumenValue[0])
+    volumenValue[1] = int(volumenValue[1])
+    if volumenValue[0] == 1:
+      self.volumenLevel = 0.25 * 0.25
+      volumenValue = 0.25
+    elif volumenValue[1] == 25:
+      self.volumenLevel = 0.50 * 0.50
+      volumenValue = 0.50
+    elif volumenValue[1] == 5:
+      self.volumenLevel = 0.75 * 0.75
+      volumenValue = 0.75
+    elif volumenValue[1] == 75:
+      self.volumenLevel = 1.0 * 1.0
+      volumenValue = 1.0
+    write('volumenValue', str(volumenValue))
 
 # Screen functions
 #   Window resize function
@@ -611,7 +675,7 @@ class Game():
     posWidthText = self.pixel(11.11, 'w')
     if self.idiom == 'en':
       posWidthText = self.pixel(19, 'w')
-    text = self.dicExitText[self.idiom]
+    text = self.dicPlayText[self.idiom]
     self.font = Pg.font.Font(path('data/font/CascadiaMonoPLBold.ttf'), int(self.pixel(3, 'h')))
     self.text(windows, text, (karg['widthRest'] + posWidthText, karg['heightRest'] + self.pixel(94, 'h')))
 
@@ -647,22 +711,24 @@ class Game():
   def paintConfigScreen(self, windows, **karg):
     spaceWidth = self.pixel(1, 'w')
     spaceHeight = self.pixel(2, 'h')
-
     boxWidth = self.pixel(3, 'w')
     boxHeight = self.pixel(3, 'h')
 
     windows.fill(self.colorBackground)
 
+#   Theme buttons
     self.buttonLightTheme = Pg.Rect(karg['widthRest'] + self.pixel(12, 'w'), karg['heightRest'] + self.pixel(21, 'h'), boxWidth, boxHeight)
     Pg.draw.rect(windows, self.buttonColors[self.buttonThemeColors[0]], self.buttonLightTheme)
     self.buttonDarkTheme = Pg.Rect(karg['widthRest'] + self.pixel(12, 'w'), karg['heightRest'] + self.pixel(25, 'h'), boxWidth, boxHeight)
     Pg.draw.rect(windows, self.buttonColors[self.buttonThemeColors[1]], self.buttonDarkTheme)
 
+#   Sounds buttons
     self.buttonEffectsSounds = Pg.Rect(karg['widthRest'] + self.pixel(55, 'w'), karg['heightRest'] + self.pixel(21, 'h'), boxWidth, boxHeight)
     Pg.draw.rect(windows, self.colorButtonEffectsSounds, self.buttonEffectsSounds)
-    self.buttonVolumenSounds = Pg.Rect(karg['widthRest'] + self.pixel(76, 'w'), karg['heightRest'] + self.pixel(21, 'h'), boxWidth, boxHeight)
-    Pg.draw.rect(windows, self.colorFont, self.buttonVolumenSounds)
+    self.buttonVolumenSounds = Pg.Rect(karg['widthRest'] + self.pixel(76, 'w'), karg['heightRest'] + self.pixel(21, 'h'), self.pixel(9.5, 'w'), boxHeight)
+    Pg.draw.rect(windows, self.colorBackground, self.buttonVolumenSounds)
 
+#   Dificulty buttons
     self.buttonEasyDificulty = Pg.Rect(karg['widthRest'] + self.pixel(12, 'w'), karg['heightRest'] + self.pixel(54, 'h'), boxWidth, boxHeight)
     Pg.draw.rect(windows, self.buttonColors[self.buttonDificultyColors[0]], self.buttonEasyDificulty)
     self.buttonNormalDificulty = Pg.Rect(karg['widthRest'] + self.pixel(12, 'w'), karg['heightRest'] + self.pixel(58, 'h'), boxWidth, boxHeight)
@@ -672,10 +738,11 @@ class Game():
     self.buttonExtremeDificulty = Pg.Rect(karg['widthRest'] + self.pixel(12, 'w'), karg['heightRest'] + self.pixel(66, 'h'), boxWidth, boxHeight)
     Pg.draw.rect(windows, self.buttonColors[self.colorButtonExtremeDificulty], self.buttonExtremeDificulty)
 
-    self.buttonEsIdiom = Pg.Rect(karg['widthRest'] + self.pixel(55, 'w'), karg['heightRest'] + self.pixel(54, 'h'), boxWidth, boxHeight)
-    Pg.draw.rect(windows, self.buttonColors[self.buttonIdiomColors[0]], self.buttonEsIdiom)
-    self.buttonEnIdiom = Pg.Rect(karg['widthRest'] + self.pixel(55, 'w'), karg['heightRest'] + self.pixel(58, 'h'), boxWidth, boxHeight)
-    Pg.draw.rect(windows, self.buttonColors[self.buttonIdiomColors[1]], self.buttonEnIdiom)
+#   Idiom buttons
+    self.buttonEnIdiom = Pg.Rect(karg['widthRest'] + self.pixel(55, 'w'), karg['heightRest'] + self.pixel(54, 'h'), boxWidth, boxHeight)
+    Pg.draw.rect(windows, self.buttonColors[self.buttonIdiomColors[0]], self.buttonEnIdiom)
+    self.buttonEsIdiom = Pg.Rect(karg['widthRest'] + self.pixel(55, 'w'), karg['heightRest'] + self.pixel(58, 'h'), boxWidth, boxHeight)
+    Pg.draw.rect(windows, self.buttonColors[self.buttonIdiomColors[1]], self.buttonEsIdiom)
     self.buttonPorIdiom = Pg.Rect(karg['widthRest'] + self.pixel(55, 'w'), karg['heightRest'] + self.pixel(62, 'h'), boxWidth, boxHeight)
     Pg.draw.rect(windows, self.buttonColors[self.buttonIdiomColors[2]], self.buttonPorIdiom)
 
@@ -706,6 +773,11 @@ class Game():
 
 #   Sound text
     self.text(windows, self.listConfigText[3][self.idiom], (karg['widthRest'] + self.pixel(59, 'w'), karg['heightRest'] + self.pixel(20, 'h')))
+    if self.music:
+      level = self.getVolumenLevel()
+      self.text(windows, level, (karg['widthRest'] + self.pixel(77, 'w'), karg['heightRest'] + self.pixel(20, 'h')))
+    else:
+      self.text(windows, 'Off', (karg['widthRest'] + self.pixel(77, 'w'), karg['heightRest'] + self.pixel(20, 'h')))
 
 #   Texts dificulty
 #   Easy dificulty text
@@ -742,8 +814,9 @@ class Game():
   def Sound(self, sound):
     if self.music:
       soundPlay = Pg.mixer.Sound(path(sound))
-      print(Pg.mixer.Sound.get_volume(soundPlay))
+      soundPlay.set_volume(self.volumenLevel)
       Pg.mixer.Sound.play(soundPlay)
+
 
 #Paint text function
   def text(self, windows, text, pos):
