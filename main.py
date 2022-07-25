@@ -4,7 +4,6 @@
 
 #Imports
 import os
-from xmlrpc.client import boolean
 
 # Hide welcome print in pygame
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
