@@ -4,6 +4,7 @@
 
 #Imports
 import os
+from xmlrpc.client import boolean
 
 # Hide welcome print in pygame
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
@@ -80,6 +81,7 @@ class Game():
     self.lenWord = int(read('length'))
     self.record = int(read('record'))
     self.volumenLevel = float(read('volumenValue'))
+    self.pressButtonExtremeDificulty = read('extreme')
 
     self.proportion = ast.literal_eval(read('proportion'))
     self.dicLanguage = ast.literal_eval(read('language'))
@@ -94,7 +96,7 @@ class Game():
     self.colorPassive = self.colors['gray']
     self.colorInput = self.colorCheck = self.colorCross = self.colorButtonEffectsSounds = self.colorPassive
 
-    self.focusText = self.sendText = self.pressCheck = self.pressCross = self.pressConfig = self.win = self.newRecord = self.endScreen = self.configScreen = self.play = self.pressButtnLightTheme = self.pressButtnDarkTheme = self.pressButtonExtremeDificulty = self.pressButtonEsIdiom = self.pressButtonEnIdiom = self.pressButtonPorIdiom = False
+    self.focusText = self.sendText = self.pressCheck = self.pressCross = self.pressConfig = self.win = self.newRecord = self.endScreen = self.configScreen = self.play = self.pressButtnLightTheme = self.pressButtnDarkTheme = self.pressButtonEsIdiom = self.pressButtonEnIdiom = self.pressButtonPorIdiom = False
     self.gameScreen = True
     self.font = Pg.font.Font(path('data/font/CascadiaMonoPL.ttf'), 60)
 
@@ -178,6 +180,7 @@ class Game():
 #   End screen
     if self.attempts == 5 or self.win == True:
       self.endScreen = True
+      self.focusText = False
       if not self.win:
         if self.flagCheckWord:
           self.Sound('./data/sound/gameOver.wav')
@@ -201,16 +204,13 @@ class Game():
 #   press the buttons idioms
       if self.pressButtonEsIdiom:
         write('idiom', 'es')
-        self.randomWord()
-        self.pressButtonEsIdiom = False
+        self.pressButtonEsIdiom = self.play = False
       if self.pressButtonEnIdiom:
         write('idiom', 'en')
-        self.randomWord()
-        self.pressButtonEnIdiom = False
+        self.pressButtonEnIdiom = self.play = False
       if self.pressButtonPorIdiom:
         write('idiom', 'por')
-        self.randomWord()
-        self.pressButtonPorIdiom = False
+        self.pressButtonPorIdiom = self.play = False
 
       self.colorsButtonDificulty()
       self.colorsButtonIdiom()
@@ -317,20 +317,53 @@ class Game():
           self.colorButtonEffectsSounds = self.colorActive
           self.pressButtonEffectsSounds = True
         write('music', str(self.music))
-      
+
+#     Click on the english idiom
       if self.buttonEnIdiom.collidepoint(event.pos):
         self.pressButtonEnIdiom = True
         self.idiom = 'en'
-      
+
+#     Click on the spanish idiom
       if self.buttonEsIdiom.collidepoint(event.pos):
         self.pressButtonEsIdiom = True
         self.idiom = 'es'
 
+#     Click on the english idiom
       if self.buttonPorIdiom.collidepoint(event.pos):
         self.pressButtonPorIdiom = True
         self.idiom = 'por'
-      
-      
+
+#     Click on the easy dificulty
+      if self.buttonEasyDificulty.collidepoint(event.pos):
+        self.lenWord = 4
+        self.pressButtonExtremeDificulty = 'False'
+        self.play = False
+        write('extreme', 'False')
+        write('length', str(self.lenWord))
+
+#     Click on the normal dificulty
+      if self.buttonNormalDificulty.collidepoint(event.pos):
+        self.lenWord = 5
+        self.pressButtonExtremeDificulty = 'False'
+        self.play = False
+        write('extreme', 'False')
+        write('length', str(self.lenWord))
+
+#     Click on the hard dificulty
+      if self.buttonHardDificulty.collidepoint(event.pos):
+        self.lenWord = 6
+        self.pressButtonExtremeDificulty = 'False'
+        self.play = False
+        write('extreme', 'False')
+        write('length', str(self.lenWord))
+
+#     Click on the etremes dificulty
+      if self.buttonExtremeDificulty.collidepoint(event.pos):
+        self.lenWord = 6
+        self.play = False
+        self.pressButtonExtremeDificulty = 'True'
+        write('extreme', 'True')
+        write('length', str(self.lenWord))
       
 #     Click on the volumen sound
       if self.buttonVolumenSounds.collidepoint(event.pos):
@@ -525,10 +558,10 @@ class Game():
       self.buttonDificultyColors = [1,0,0]
     elif self.lenWord == 5:
       self.buttonDificultyColors = [0,1,0]
-    elif self.lenWord == 6:
+    elif self.lenWord == 6 and self.pressButtonExtremeDificulty == 'False':
       self.buttonDificultyColors = [0,0,1]
     self.colorButtonExtremeDificulty = 0
-    if self.pressButtonExtremeDificulty:
+    if self.pressButtonExtremeDificulty == 'True':
       self.colorButtonExtremeDificulty = 1
       self.buttonDificultyColors = [0,0,0]
 
@@ -613,7 +646,8 @@ class Game():
           Pg.draw.rect(windows, self.colors[listColor[column]], Pg.Rect(karg['widthRest'] + karg['spaceWidth']*(column+1) + (karg['spaceWidth'] + karg['boxWidth'])*column, karg['heightRest'] + karg['spaceHeight']*(row+1) + (karg['spaceHeight'] + karg['boxHeight'])*row, karg['boxWidth'], karg['boxHeight']))
 
 #       lyrics
-          self.text(windows, listLyrics[column], (self.pixel(2.4, 'w') + karg['widthRest'] + karg['spaceWidth']*(column+1) + (karg['spaceWidth'] + karg['boxWidth'])*column, (karg['heightRest'] + karg['spaceHeight']*(row+1) + (karg['spaceHeight'] + karg['boxHeight'])*row) - self.pixel(1, 'h'), karg['boxWidth'], karg['boxHeight']))
+          if self.pressButtonExtremeDificulty == 'False':
+            self.text(windows, listLyrics[column], (self.pixel(2.4, 'w') + karg['widthRest'] + karg['spaceWidth']*(column+1) + (karg['spaceWidth'] + karg['boxWidth'])*column, (karg['heightRest'] + karg['spaceHeight']*(row+1) + (karg['spaceHeight'] + karg['boxHeight'])*row) - self.pixel(1, 'h'), karg['boxWidth'], karg['boxHeight']))
 
 #     Draw text input, check button box and cross button box
     Pg.draw.rect(windows, self.colorInput, self.textInput)

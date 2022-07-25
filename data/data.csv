@@ -1,4 +1,3 @@
-length;5
 proportion;{4:[6.5, 1.5, 12, 12, 30], 5:[4, 1.5, 12, 12, 37], 6:[2.3, 1.5, 12, 12, 44]}
 language;{'es':['a','b','c','d','e','f','g','h','i','j','k','l','m','n','ñ','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z'],'en':['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'], 'por':['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']}
 endText;{'es':['DERROTA','VICTORIA'],'en':['DEFEAT','VICTORY'],'por':['DERROTA','VITÓRIA']}
@@ -9,9 +8,11 @@ configText;[{'es': 'Tema', 'en': 'Theme', 'por': 'Tema'} , {'es': ['Claro','Oscu
 record;6
 exitText;{'es':'Para salir presiona [ENTER] o [ESPACIO]','en':'To exit press [ENTER] or [SPACE]','por':'Para sair pressione [ENTER] ou [ESPAÇO]'}
 music;True
-color;dark
-volumenValue;0.5
-idiom;es
-wordList;['trial', 'begin', 'alias', 'corre', 'abras']
-width;500
-height;500
+volumenValue;1.0
+idiom;en
+color;white
+extreme;True
+length;6
+wordList;['expand', 'injury', 'likely', 'wisdom', 'retain']
+width;445
+height;424
